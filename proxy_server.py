@@ -45,6 +45,7 @@ def main():
 
     proxy_host = 'www.google.com'
     proxy_port = 80
+    buffer_size = 4096
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     
@@ -66,22 +67,15 @@ def main():
 
 
             #recieve data, wait a bit, then send it back
-                remote_ip = get_remote_ip(host)
-                proxy_end.connect((remote_ip, port))
+                remote_ip = get_remote_ip(proxy_host)
+                proxy_end.connect((remote_ip, proxy_port))
                 p = Process(target=echo_handler, args=(proxy_end, conn, addr))
                 p.daemon = True
                 p.start()
-
-                full_data = b""
-            while True:
-                data = s.recv(buffer_size)
-                if not data:
-                    break
-                response_data += data
-                conn.sendall(response_data)
+                print("Started Process ", p)
             conn.close()
 
-def echo_hanlder(proxy_end, conn, addr):
+def echo_handler(proxy_end, conn, addr):
     full_data = conn.recv(BUFFER_SIZE)
     time.sleep(0.5)
     proxy_end.sendall(full_data)
